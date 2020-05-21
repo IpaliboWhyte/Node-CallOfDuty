@@ -74,8 +74,8 @@ module.exports = function(config = {}) {
 
     module.platforms = {
         battle: "battle",
-        steam: "steam", 
-        psn: "psn", 
+        steam: "steam",
+        psn: "psn",
         xbl: "xbl",
         acti: "uno",
         uno: "uno"
@@ -86,7 +86,7 @@ module.exports = function(config = {}) {
             let randomId = uniqid();
             let md5sum = crypto.createHash('md5');
             let deviceId = md5sum.update(randomId).digest('hex');
-            postReq(`${loginURL}registerDevice`, { 
+            postReq(`${loginURL}registerDevice`, {
                 'deviceId': deviceId
             }).then((response) => {
                 let authHeader = response.data.authHeader;
@@ -103,10 +103,10 @@ module.exports = function(config = {}) {
                 });
             }).catch((err) => {
                 reject(err.message);
-            });  
+            });
         });
     };
-    
+
 
     module.cleanClientName = (gamertag) => {
         return encodeURIComponent(gamertag);
@@ -138,7 +138,7 @@ module.exports = function(config = {}) {
             var urlInput = defaultBaseURL + util.format("crm/cod/v2/title/%s/platform/%s/gamer/%s/profile/", worldWar2, platform, gamertag);
             sendRequest(urlInput).then(data => resolve(data)).catch(e => reject(e));
         });
-    };   
+    };
 
     module.WWIIScheduledAchievements = function(gamertag, platform = config.platform) {
         return new Promise((resolve, reject) => {
@@ -177,7 +177,7 @@ module.exports = function(config = {}) {
             var urlInput = defaultBaseURL + util.format("crm/cod/v2/title/%s/platform/%s/gamer/%s/profile/type/zm", blackops4, platform, gamertag);
             sendRequest(urlInput).then(data => resolve(data)).catch(e => reject(e));
         });
-    }; 
+    };
 
     module.BO4mp = function (gamertag, platform = config.platform) {
         return new Promise((resolve, reject) => {
@@ -223,7 +223,7 @@ module.exports = function(config = {}) {
             sendRequest(urlInput).then(data => resolve(data)).catch(e => reject(e));
         });
     };
-    
+
     module.BO4combatbo = function (gamertag, platform = config.platform) {
         return new Promise((resolve, reject) => {
             if (platform === "steam") reject("Steam Doesn't exist for BO4. Try `battle` instead.");
@@ -260,12 +260,12 @@ module.exports = function(config = {}) {
         });
     };
 
-    module.MWcombatwz = function (gamertag, platform = config.platform) {
+    module.MWcombatwz = function (gamertag, platform = config.platform, {stream = false} = {}) {
         return new Promise((resolve, reject) => {
             if (platform === "steam") reject("Steam Doesn't exist for MW. Try `battle` instead.");
             if (platform === "battle" || platform === "uno") gamertag = this.cleanClientName(gamertag);
             var urlInput = defaultBaseURL + util.format("crm/cod/v2/title/%s/platform/%s/gamer/%s/matches/wz/start/0/end/0/details", modernwarfare, platform, gamertag);
-            sendRequest(urlInput).then(data => resolve(data)).catch(e => reject(e));
+            sendRequest(urlInput, {stream}).then(data => resolve(data)).catch(e => reject(e));
         });
     };
 
@@ -470,11 +470,18 @@ module.exports = function(config = {}) {
             }).catch(err => reject(err));
         });
     };
-    
-    sendRequest = (url) => {
+
+    sendRequest = (url, {stream = false} = {}) => {
         return new Promise((resolve, reject) => {
             if(!loggedIn) reject("Not Logged In.");
-            apiAxios.get(url).then(body => {
+            const options = {};
+            if(stream){
+              options.responseType = 'stream';
+            }
+            apiAxios.get(url, options).then(body => {
+                if(stream){
+                  return body;
+                }
                 if(debug === 1) {
                     console.log(`[DEBUG]`, `Round trip took: ${body.headers['request-duration']}ms.`);
                     console.log(`[DEBUG]`, `Response Size: ${JSON.stringify(body.data.data).length} bytes.`);
@@ -483,11 +490,11 @@ module.exports = function(config = {}) {
                     if(body.data.data.message.includes("user not found")) reject("user not found.");
                     else if(body.data.data.message.includes("rate limit exceeded")) reject("Rate Limited.");
                     else reject(body.data.data.message);
-                resolve(body.data.data); 
+                resolve(body.data.data);
             }).catch(err => reject(err));
         });
     };
-    
+
     postRequest = (url) => {
         return new Promise((resolve, reject) => {
             if(!loggedIn) reject("Not Logged In.");
@@ -501,7 +508,7 @@ module.exports = function(config = {}) {
                     if(body.data.data.message.includes("user not found")) reject("user not found.");
                     else if(body.data.data.message.includes("rate limit exceeded")) reject("Rate Limited.");
                     else reject(body.data.data.message);
-                resolve(body.data.data); 
+                resolve(body.data.data);
             }).catch(err => reject(err));
         });
     };

@@ -35,6 +35,8 @@
     "axios-rate-limit": "^1.2.1",
     "http-proxy": "^1.18.1",
     "proxy-from-env": "^1.1.0",
+    "stream-chain": "2.2.1",
+    "stream-json": "1.5.0",
     "uniqid": "^5.2.0"
   }
 }
