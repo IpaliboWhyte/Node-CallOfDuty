@@ -480,7 +480,7 @@ module.exports = function(config = {}) {
             }
             apiAxios.get(url, options).then(body => {
                 if(stream){
-                  return body;
+                  return resolve(body);
                 }
                 if(debug === 1) {
                     console.log(`[DEBUG]`, `Round trip took: ${body.headers['request-duration']}ms.`);
